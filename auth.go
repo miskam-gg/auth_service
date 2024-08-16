@@ -41,7 +41,6 @@ func handleToken(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Сохраняем хешированный Refresh токен в базе данных
 	err = SaveRefreshToken(db, userID, hashedRefreshToken, ipAddress)
 	if err != nil {
 		http.Error(w, "Failed to save refresh token", http.StatusInternalServerError)
@@ -72,7 +71,6 @@ func handleRefresh(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Проверяем хеш токена
 	err = bcrypt.CompareHashAndPassword([]byte(tokenDetails.TokenHash), []byte(refreshToken))
 	if err != nil {
 		http.Error(w, "Invalid refresh token", http.StatusUnauthorized)
@@ -81,7 +79,6 @@ func handleRefresh(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	ipAddress := r.RemoteAddr
 	if tokenDetails.IPAddress != ipAddress {
-		// Логика для отправки email предупреждения о смене IP (моковая)
 		fmt.Println("Warning: IP address has changed!")
 	}
 
@@ -104,7 +101,7 @@ func generateAccessToken(userID, ipAddress string) (string, error) {
 		Subject:   userID,
 		IssuedAt:  time.Now().Unix(),
 		ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-		Audience:  ipAddress, // Использование ipAddress в JWT
+		Audience:  ipAddress,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
